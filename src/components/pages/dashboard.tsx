@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Wallet, Settings } from "lucide-react";
+import { Wallet, Settings, RefreshCcw } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -38,18 +38,18 @@ export default function Dashboard() {
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
-  if (error) {
-    return (
-      <div className="flex items-center justify-center h-screen bg-slate-50 dark:bg-slate-950">
-        <div className="text-center">
-          <p className="text-2xl font-bold text-red-600 mb-4">Error</p>
-          <p className="text-md text-slate-600 dark:text-slate-400">
-            Failed to load crypto data. Please try again later.
-          </p>
-        </div>
-      </div>
-    );
-  }
+  // if (error) {
+  //   return (
+  //     <div className="flex items-center justify-center h-screen bg-slate-50 dark:bg-slate-950">
+  //       <div className="text-center">
+  //         <p className="text-2xl font-bold text-red-600 mb-4">Error</p>
+  //         <p className="text-md text-slate-600 dark:text-slate-400">
+  //           Failed to load crypto data. Please try again later.
+  //         </p>
+  //       </div>
+  //     </div>
+  //   );
+  // }
   return (
     <div className="flex h-screen bg-slate-50 dark:bg-slate-950 overflow-hidden">
       {/* Sidebar */}
@@ -61,6 +61,8 @@ export default function Dashboard() {
         <div className="flex items-center gap-2 mb-8">
           <Wallet className="h-6 w-6 text-blue-600" />
           <h1 className="text-2xl font-bold">CryptoVault</h1>
+         
+
           {isMobile && (
             <Button
               variant="ghost"
@@ -78,20 +80,11 @@ export default function Dashboard() {
           <h2 className="text-xs uppercase font-semibold text-muted-foreground mb-2 ml-1">
             My Assets
           </h2>
-          <div className="flex items-center justify-between mb-2">
-            <Button
-              variant="outline"
-              size="sm"
-              className="gap-2"
-              onClick={refresh}
-            >
-              Refresh
-            </Button>
-          </div>
+
           <ul className="space-y-2">
             {loading
               ? assetList.map((asset) => (
-                  <Skeleton key={asset.symbol} className=" h-15 w-[250px]" />
+                  <Skeleton key={asset.symbol} className=" h-15 w-[240px]" />
                 ))
               : assetList.map((asset) => {
                   return (
@@ -163,7 +156,16 @@ export default function Dashboard() {
             {assetList.find((asset) => asset.symbol === activeAsset)?.name ||
               "Unknown Asset"}
           </h2>
+          
           <div className="ml-auto flex gap-3">
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-2"
+            onClick={refresh}
+          >
+            <RefreshCcw/>
+          </Button>
             <SendDialog />
             <ReceiveDialog />
           </div>

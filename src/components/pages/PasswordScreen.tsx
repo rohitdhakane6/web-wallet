@@ -27,6 +27,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import Header from "@/components/layout/header";
 
 export default function PasswordScreen() {
   const { setWallets, setRecoveryPhrase, setIsAuthenticated } = useWallet();
@@ -81,6 +82,8 @@ export default function PasswordScreen() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-background/90 to-background/80 flex items-center justify-center p-6">
+      <Header />
+
       <div className="w-full max-w-md mx-auto">
         <div className="mb-8 text-center">
           <div className="inline-flex items-center justify-center h-16 w-16 rounded-full bg-primary/10 mb-4">
@@ -93,8 +96,8 @@ export default function PasswordScreen() {
         </div>
 
         <Card className="border-muted/20 bg-card/95 backdrop-blur-sm shadow-xl rounded-2xl overflow-hidden">
-          <CardHeader className="pb-3 pt-6 space-y-1">
-            <CardTitle className="text-xl font-semibold flex items-center gap-2">
+          <CardHeader className="pb-3 pt-6 space-y-1 text-center">
+            <CardTitle className="text-xl font-semibold flex items-center justify-center gap-2">
               <Shield className="h-5 w-5 text-primary" />
               Unlock Your Wallet
             </CardTitle>
@@ -176,9 +179,7 @@ export default function PasswordScreen() {
               <AlertDialogHeader>
                 <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                 <AlertDialogDescription>
-                  {`This will reset your current wallet. You can create a new one or import an existing wallet using a recovery phrase. 
-          
-          Make sure your recovery phrase is backed up before continuing.`}
+                  {`This will reset your current wallet. You can create a new one or import an existing wallet using a recovery phrase. Make sure your recovery phrase is backed up before continuing.`}
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
