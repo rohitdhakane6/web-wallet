@@ -1,74 +1,216 @@
-// app/dashboard/page.tsx or your Dashboard component
+import { useState, useEffect } from "react";
+import { Wallet, Settings } from "lucide-react";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
+import NavItem from "@/components/dashboard/Navitem";
+import SendDialog from "@/components/dashboard/SendDialog";
+import ReceiveDialog from "@/components/dashboard/ReceiveDialog";
+import { ModeToggle } from "@/components/mode-toggle";
+import { assetList } from "@/data";
+import SectionCard from "@/components/dashboard/SectionCard";
+import Chart from "@/components/dashboard/Chart";
+import { useCryptoData } from "@/hooks/crypto-data";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Dashboard() {
-  return (
-    <div className="flex min-h-screen">
-      {/* Sidebar */}
-      <div className="w-[300px] border-r p-4 flex flex-col">
-        <div className="text-center mb-6">
-          <div className="text-2xl font-bold">$0.00</div>
-          <div className="text-muted-foreground text-sm">Portfolio Value</div>
-        </div>
+  const [activeTab, setActiveTab] = useState("chart");
+  const [activeAsset, setActiveAsset] = useState("sol");
 
-        {/* Wallets List */}
-        <div className="space-y-2 overflow-y-auto">
-          {wallets.map((wallet, index) => (
-            <Card key={index} className="cursor-pointer hover:shadow-md">
-              <CardContent className="flex items-center p-4">
-                <div className="flex-shrink-0 w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
-                  {/* Chain Icon Placeholder */}
-                  <span className="text-sm font-bold">{wallet.symbol}</span>
-                </div>
-                <div className="ml-4">
-                  <div className="font-medium">{wallet.name}</div>
-                  <div className="text-sm text-muted-foreground">{wallet.balance}</div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+  const [isMobile, setIsMobile] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+
+  const { data: assetData, error, loading, refresh } = useCryptoData();
+  const currentAssetData = assetData.find((a) => a.symbol === activeAsset);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+      if (window.innerWidth < 768) {
+        setIsSidebarOpen(false);
+      } else {
+        setIsSidebarOpen(true);
+      }
+    };
+
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-slate-50 dark:bg-slate-950">
+        <div className="text-center">
+          <p className="text-2xl font-bold text-red-600 mb-4">Error</p>
+          <p className="text-md text-slate-600 dark:text-slate-400">
+            Failed to load crypto data. Please try again later.
+          </p>
         </div>
       </div>
+    );
+  }
+  return (
+    <div className="flex h-screen bg-slate-50 dark:bg-slate-950 overflow-hidden">
+      {/* Sidebar */}
+      <aside
+        className={`${isSidebarOpen ? "translate-x-0" : "-translate-x-full"} 
+          md:translate-x-0 transition-transform duration-300 fixed md:relative z-30 
+          w-72 md:w-64 lg:w-72 border-r p-4 flex flex-col bg-white dark:bg-slate-900 h-screen`}
+      >
+        <div className="flex items-center gap-2 mb-8">
+          <Wallet className="h-6 w-6 text-blue-600" />
+          <h1 className="text-2xl font-bold">CryptoVault</h1>
+          {isMobile && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="ml-auto"
+              onClick={() => setIsSidebarOpen(false)}
+            >
+              <span className="sr-only">Close sidebar</span>
+              &times;
+            </Button>
+          )}
+        </div>
+
+        <nav className="flex flex-col gap-1 w-full flex-1 overflow-auto p-2">
+          <h2 className="text-xs uppercase font-semibold text-muted-foreground mb-2 ml-1">
+            My Assets
+          </h2>
+          <div className="flex items-center justify-between mb-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2"
+              onClick={refresh}
+            >
+              Refresh
+            </Button>
+          </div>
+          <ul className="space-y-2">
+            {loading
+              ? assetList.map((asset) => (
+                  <Skeleton key={asset.symbol} className=" h-15 w-[250px]" />
+                ))
+              : assetList.map((asset) => {
+                  return (
+                    <NavItem
+                      key={asset.symbol}
+                      icon={asset.icon}
+                      name={asset.name}
+                      balance={0}
+                      symbol={asset.symbol}
+                      price={
+                        assetData.find((a) => a.symbol === asset.symbol)
+                          ?.current_price || 0
+                      }
+                      change={
+                        assetData.find((a) => a.symbol === asset.symbol)
+                          ?.price_change_percentage_24h || 0
+                      }
+                      isActive={asset.symbol === activeAsset}
+                      onClick={() => setActiveAsset(asset.symbol)}
+                    />
+                  );
+                })}
+          </ul>
+        </nav>
+
+        <div className="mt-auto hidden md:block">
+          <div className="flex items-center justify-between mb-4">
+            <Button variant="outline" className="gap-2">
+              <Settings className="w-4 h-4" /> Settings
+            </Button>
+            <ModeToggle />
+          </div>
+          <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+            <p className="text-sm text-blue-600 dark:text-blue-400 font-medium mb-2">
+              Upgrade to Pro
+            </p>
+            <p className="text-xs text-slate-600 dark:text-slate-400 mb-2">
+              Get advanced trading features, lower fees, and priority support
+            </p>
+            <Button size="sm" className="w-full text-xs">
+              Upgrade Now
+            </Button>
+          </div>
+        </div>
+      </aside>
 
       {/* Main Content */}
-      <div className="flex-1 p-8">
-        <div className="mb-6">
-          <h2 className="text-2xl font-bold mb-2">Bitcoin</h2>
-          <div className="text-muted-foreground">BTC</div>
-        </div>
-
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <div className="text-3xl font-bold">$0.00</div>
-            <div className="text-sm text-muted-foreground">Balance: 0 BTC</div>
-          </div>
-          <div className="flex space-x-2">
-            <Button variant="outline">Send</Button>
-            <Button variant="outline">Receive</Button>
-            <Button variant="outline">Swap</Button>
-            <Button variant="outline">History</Button>
-          </div>
-        </div>
-
-        {/* No Chart, only tabs */}
-        <div className="flex space-x-4">
-          {['1D', '7D', '14D', '1M', '1Y'].map((range) => (
-            <Button key={range} variant="ghost" size="sm">
-              {range}
+      <main className="flex-1 p-4 md:p-6 overflow-auto h-screen relative">
+        {/* Mobile header with menu button */}
+        {isMobile && (
+          <div className="flex items-center justify-between mb-4">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsSidebarOpen(true)}
+            >
+              <span className="sr-only">Open menu</span>☰
             </Button>
-          ))}
-        </div>
-      </div>
-    </div>
-  )
-}
+            <div className="flex items-center gap-2">
+              <Wallet className="h-5 w-5 text-blue-600" />
+              <h1 className="text-xl font-bold">CryptoVault</h1>
+            </div>
+            <ModeToggle />
+          </div>
+        )}
 
-// Example dummy data
-const wallets = [
-  { symbol: "BTC", name: "Bitcoin", balance: "$93,922.00" },
-  { symbol: "ETH", name: "Ethereum", balance: "$1,796.32" },
-  { symbol: "USDT", name: "Tether", balance: "$1.00" },
-  { symbol: "XRP", name: "XRP", balance: "$2.24" },
-]
+        <div className="flex flex-col md:flex-row gap-3 mb-6">
+          <h2 className="text-2xl font-bold capitalize">
+            {assetList.find((asset) => asset.symbol === activeAsset)?.name ||
+              "Unknown Asset"}
+          </h2>
+          <div className="ml-auto flex gap-3">
+            <SendDialog />
+            <ReceiveDialog />
+          </div>
+        </div>
+
+        {currentAssetData && (
+          <SectionCard
+            holdings={0.123}
+            symbol={activeAsset}
+            price={currentAssetData.current_price || 0}
+            changeInPrice={currentAssetData.price_change_percentage_24h ?? 0}
+            marketCap={currentAssetData.market_cap}
+            marketCapRank={currentAssetData.market_cap_rank || 0}
+            volume={currentAssetData.total_volume || 0}
+            circulatingSupply={currentAssetData.circulating_supply || 0}
+            maxSupply={currentAssetData.max_supply || 0}
+          />
+        )}
+
+        {/* Tabs for different sections */}
+        <Tabs
+          defaultValue="chart"
+          value={activeTab}
+          onValueChange={setActiveTab}
+          className="w-full"
+        >
+          <TabsList className="grid w-full max-w-md grid-cols-2 mb-6">
+            <TabsTrigger value="chart" className="cursor-pointer">
+              Price Chart
+            </TabsTrigger>
+            <TabsTrigger value="transactions" className="cursor-pointer">
+              Transactions
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="chart">
+            <Chart
+              selectedAsset={
+                (assetList.find((asset) => asset.symbol === activeAsset)
+                  ?.name as "bitcoin" | "ethereum" | "solana") || "solana"
+              }
+            />
+          </TabsContent>
+
+          <TabsContent value="transactions"></TabsContent>
+        </Tabs>
+      </main>
+    </div>
+  );
+}

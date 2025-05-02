@@ -5,6 +5,8 @@ import SecuritySection from "@/components/sections/security-section";
 import PricingSection from "@/components/sections/pricing-section";
 import CTASection from "@/components/sections/cta-section";
 import CryptoTicker from "@/components/sections/crypto-ticker";
+import Header from "@/components/layout/header";
+import Footer from "@/components/layout/footer";
 
 export default function LandingPage() {
   // Set page title
@@ -32,6 +34,7 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <Header />
       <main className="flex-grow">
         <HeroSection />
         <CryptoTicker />
@@ -40,6 +43,7 @@ export default function LandingPage() {
         <PricingSection />
         <CTASection />
       </main>
+      <Footer />
     </div>
   );
 }

@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
 import {
@@ -12,6 +11,7 @@ import {
   DivideIcon as LucideIcon,
 } from "lucide-react";
 import { ModeToggle } from "@/components/mode-toggle";
+import { useNavigate } from "react-router";
 
 type NavItem = {
   title: string;
@@ -61,8 +61,8 @@ const navItems: NavItem[] = [
 ];
 
 export default function Header() {
+  const navigate = useNavigate();
   const [isScrolled, setIsScrolled] = useState(false);
-  const [isConnected, setIsConnected] = useState(false);
 
   // Handle scroll event to change header appearance
   useEffect(() => {
@@ -73,20 +73,6 @@ export default function Header() {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
-
-  // Handle wallet connection
-  const handleConnectWallet = () => {
-    if (isConnected) {
-      setIsConnected(false);
-      toast("Your wallet has been disconnected successfully.");
-    } else {
-      // Simulate wallet connection
-      setTimeout(() => {
-        setIsConnected(true);
-        toast("Your wallet has been connected successfully.");
-      }, 500);
-    }
-  };
 
   return (
     <header
@@ -100,10 +86,10 @@ export default function Header() {
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         {/* Logo */}
         <a href="/">
-        <div className="flex items-center">
-          <Wallet className="h-8 w-8 text-primary mr-2" />
-          <span className="text-xl font-bold">CryptoVault</span>
-        </div>
+          <div className="flex items-center">
+            <Wallet className="h-8 w-8 text-primary mr-2" />
+            <span className="text-xl font-bold">CryptoVault</span>
+          </div>
         </a>
 
         {/* Desktop Navigation */}
@@ -147,16 +133,10 @@ export default function Header() {
           <ModeToggle />
 
           <Button
-            variant={isConnected ? "destructive" : "default"}
-            className={cn(
-              "transition-all",
-              isConnected
-                ? "bg-red-600 hover:bg-red-700 text-white"
-                : "bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
-            )}
-            onClick={handleConnectWallet}
+          onClick={() => navigate("/dashboard")}
+            className="transition-all bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
           >
-            {isConnected ? "Disconnect Wallet" : "Connect Wallet"}
+            Create Wallet
           </Button>
         </div>
 
@@ -214,11 +194,10 @@ export default function Header() {
                 <ModeToggle />
 
                 <Button
-                  variant={isConnected ? "destructive" : "default"}
                   className="w-full"
-                  onClick={handleConnectWallet}
+                  onClick={() => navigate("/dashboard")}
                 >
-                  {isConnected ? "Disconnect Wallet" : "Connect Wallet"}
+                  Create Wallet
                 </Button>
               </div>
             </div>
