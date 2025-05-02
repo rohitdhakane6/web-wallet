@@ -1,10 +1,10 @@
-import { useState } from 'react';
-import { Send } from 'lucide-react';
-import { z } from 'zod';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
+import { useState } from "react";
+import { Send } from "lucide-react";
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 
-import { Button } from '@/components/ui/button';
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -13,7 +13,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui/dialog';
+} from "@/components/ui/dialog";
 import {
   Form,
   FormControl,
@@ -21,45 +21,65 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { toast } from 'sonner';
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
+import { sendSolanaTransaction } from "@/lib/rpcClients";
 
 const formSchema = z.object({
   address: z
     .string()
     .min(26, {
-      message: 'Wallet address must be at least 26 characters.',
+      message: "Wallet address must be at least 26 characters.",
     })
     .max(64, {
-      message: 'Wallet address cannot exceed 64 characters.',
+      message: "Wallet address cannot exceed 64 characters.",
     }),
   amount: z.coerce
     .number()
     .positive({
-      message: 'Amount must be positive.',
+      message: "Amount must be positive.",
     })
     .min(0.00001, {
-      message: 'Minimum amount is 0.00001.',
+      message: "Minimum amount is 0.00001.",
     }),
-  memo: z.string().optional(),
 });
 
-export default function SendDialog() {
+interface SendDialogProps {
+  name: string;
+  symbol: string;
+  privateKey: string;
+}
+
+export default function SendDialog({
+  name,
+  symbol,
+  privateKey,
+}: SendDialogProps) {
   const [open, setOpen] = useState(false);
-  
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      address: '',
+      address: "",
       amount: undefined,
-      memo: '',
     },
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
-    toast( `Sending ${values.amount} BTC to ${values.address.substring(0, 6)}...${values.address.substring(values.address.length - 4)}`);
+    sendSolanaTransaction(
+      privateKey,
+      values.address,
+      values.amount,
+      'devnet'
+    );
+
+    toast(
+      `Sending ${values.amount} BTC to ${values.address.substring(
+        0,
+        6
+      )}...${values.address.substring(values.address.length - 4)}`
+    );
     setOpen(false);
     form.reset();
   }
@@ -74,7 +94,9 @@ export default function SendDialog() {
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Send Cryptocurrency</DialogTitle>
+          <DialogTitle>
+            Send {name.charAt(0).toLocaleUpperCase() + name.slice(1)}
+          </DialogTitle>
           <DialogDescription>
             Enter the recipient address and amount to send
           </DialogDescription>
@@ -99,7 +121,7 @@ export default function SendDialog() {
               name="amount"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Amount (BTC)</FormLabel>
+                  <FormLabel>Amount ({symbol.toUpperCase()})</FormLabel>
                   <FormControl>
                     <Input
                       type="number"
@@ -112,21 +134,10 @@ export default function SendDialog() {
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name="memo"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Memo (Optional)</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Payment for..." {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
             <DialogFooter>
-              <Button type="submit" className="w-full">Send Transaction</Button>
+              <Button type="submit" className="w-full">
+                Send Transaction
+              </Button>
             </DialogFooter>
           </form>
         </Form>

@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import { assetList } from "@/data";
+import { getEthereumBalance, getSolanaBalance } from "@/lib/rpcClients";
+import { useWallet } from "@/context/WalletContext";
 
 interface Coin {
   id: string; // Unique ID of the coin (used in API requests)
@@ -32,13 +34,14 @@ interface Coin {
     percentage: number; // ROI as a percentage
   } | null; // ROI can be null if not available
   last_updated: string; // Last time the data was updated (ISO timestamp)
-  
+  balance: number; //  balance field for the coin
 }
 
 export const useCryptoData = (vsCurrency: string = "usd") => {
   const [data, setData] = useState<Coin[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const { wallets } = useWallet();
 
   const fetchData = async () => {
     try {
@@ -57,11 +60,46 @@ export const useCryptoData = (vsCurrency: string = "usd") => {
     }
   };
 
+  const fetchBalance = async () => {
+    const ethereumPublicKey = wallets.find(
+      (wallet) => wallet.name.toLowerCase() === "ethereum"
+    )?.publicKey;
+    const solanaPublicKey = wallets.find(
+      (wallet) => wallet.name.toLowerCase() === "solana"
+    )?.publicKey;
+    if (!ethereumPublicKey || !solanaPublicKey) {
+      console.error("Public key not found for Ethereum or Solana");
+      return;
+    }
+    try {
+      const solanaBalance = await getSolanaBalance(solanaPublicKey, "devnet");
+      const ethereumBalance = await getEthereumBalance(ethereumPublicKey);
+      setData((prevData) =>
+        prevData.map((coin) => {
+          if (coin.name.toLowerCase() === "solana") {
+            return { ...coin, balance: solanaBalance / 1e9 };
+          }
+          if (coin.name.toLowerCase() === "ethereum") {
+            return { ...coin, balance: ethereumBalance / 1e18 };
+          }
+          return coin;
+        })
+      );
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   useEffect(() => {
     if (assetList.length > 0) {
       fetchData();
+      fetchBalance();
     }
-  }, [vsCurrency]);
+  }, [vsCurrency, wallets]);
 
-  return { data, loading, error ,refresh: () => fetchData()};
+  const refreshData = async () => {
+    await fetchData();
+    await fetchBalance();
+  };
+  return { data, loading, error, refresh: () => refreshData() };
 };

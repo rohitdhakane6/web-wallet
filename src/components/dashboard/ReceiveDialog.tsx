@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { QrCode, Copy, Download } from "lucide-react";
+import { Copy, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -10,13 +10,24 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import Qrcode from "react-qr-code";
 
-export default function ReceiveDialog() {
+interface ReceiveDialogProps {
+  name: string;
+  symbol: string;
+  publicKey: string;
+}
+
+export default function ReceiveDialog({
+  name,
+  publicKey,
+  symbol,
+}: ReceiveDialogProps) {
   const [open, setOpen] = useState(false);
-  const walletAddress = "0xbc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh";
 
   const copyToClipboard = () => {
-    navigator.clipboard.writeText(walletAddress);
+    navigator.clipboard.writeText(publicKey);
     toast("Wallet address copied to clipboard");
   };
 
@@ -30,19 +41,19 @@ export default function ReceiveDialog() {
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Receive Cryptocurrency</DialogTitle>
+          <DialogTitle className="capitalize">Receive {name}</DialogTitle>
           <DialogDescription>
             Share your wallet address to receive funds
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-6 py-4">
           <div className="mx-auto bg-white p-4 rounded-lg w-48 h-48 flex items-center justify-center">
-            <QrCode className="w-36 h-36 text-black" />
+            <Qrcode value={publicKey} />
           </div>
 
           <div className="relative">
-            <div className="border rounded-md p-3 bg-muted/50 break-all text-sm">
-              {walletAddress}
+            <div className="border rounded-md p-3 pr-10 bg-muted/50 break-all text-sm">
+              {publicKey}
             </div>
             <Button
               variant="ghost"
@@ -57,10 +68,18 @@ export default function ReceiveDialog() {
 
           <div className="flex flex-col gap-2">
             <p className="text-sm text-center text-muted-foreground">
-              Only send Bitcoin (BTC) to this address.
+              Only send {name} ({symbol.toUpperCase()}) to this address.
               <br />
               Sending any other asset may result in permanent loss.
             </p>
+            {symbol === "sol" && (
+              <Alert variant="destructive">
+                <AlertDescription className="text-sm">
+                  The solana Address are case sensitive, make sure to copy the
+                  address correctly.
+                </AlertDescription>
+              </Alert>
+            )}
           </div>
         </div>
       </DialogContent>

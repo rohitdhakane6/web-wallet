@@ -149,37 +149,34 @@ export const WalletProvider: React.FC<{ children: ReactNode }> = ({
         throw new Error("Recovery phrase or password is missing");
       }
 
+      const walletList: {
+        name: string;
+        address: string;
+        privateKey: string;
+        publicKey: string;
+      }[] = [];
+
       assetList.forEach((asset) => {
         const { name, derivePath } = asset;
         try {
-          // Derive wallet from recovery phrase and path
           const wallet = deriveKeyFromMnemonic(
             recoveryPhrase.join(" "),
             derivePath
           );
-
-          setWallets((prev) => [
-            ...prev,
-            {
-              name,
-              address: wallet.address,
-              privateKey: wallet.privateKey,
-              publicKey: wallet.publicKey,
-            },
-          ]);
+          walletList.push({
+            name,
+            address: wallet.address,
+            privateKey: wallet.privateKey,
+            publicKey: wallet.publicKey,
+          });
         } catch (err) {
           console.error(`Failed to create wallet for asset ${name}:`, err);
         }
       });
 
-      console.log("Wallets created:", {
-        wallets,
-        password,
-        mnemonic: recoveryPhrase.join(" "),
-      });
       const encryptedData = encryptData(
         JSON.stringify({
-          wallets,
+          wallets: walletList,
           password,
           mnemonic: recoveryPhrase.join(" "),
         }),
@@ -187,6 +184,7 @@ export const WalletProvider: React.FC<{ children: ReactNode }> = ({
       );
       localStorage.setItem("walletData", encryptedData);
       setIsAuthenticated(true);
+      setWallets(walletList);
     } catch (error) {
       console.error("Failed to complete wallet setup:", error);
     } finally {

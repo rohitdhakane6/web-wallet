@@ -12,6 +12,7 @@ import { assetList } from "@/data";
 import SectionCard from "@/components/dashboard/SectionCard";
 import Chart from "@/components/dashboard/Chart";
 import { useCryptoData } from "@/hooks/crypto-data";
+import { useWallet } from "@/context/WalletContext";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Dashboard() {
@@ -22,7 +23,9 @@ export default function Dashboard() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   const { data: assetData, error, loading, refresh } = useCryptoData();
+  const { wallets } = useWallet();
   const currentAssetData = assetData.find((a) => a.symbol === activeAsset);
+  console.log(currentAssetData);
 
   useEffect(() => {
     const handleResize = () => {
@@ -61,7 +64,6 @@ export default function Dashboard() {
         <div className="flex items-center gap-2 mb-8">
           <Wallet className="h-6 w-6 text-blue-600" />
           <h1 className="text-2xl font-bold">CryptoVault</h1>
-         
 
           {isMobile && (
             <Button
@@ -92,7 +94,10 @@ export default function Dashboard() {
                       key={asset.symbol}
                       icon={asset.icon}
                       name={asset.name}
-                      balance={0}
+                      balance={
+                        assetData.find((a) => a.symbol === asset.symbol)
+                          ?.balance || 0
+                      }
                       symbol={asset.symbol}
                       price={
                         assetData.find((a) => a.symbol === asset.symbol)
@@ -152,28 +157,48 @@ export default function Dashboard() {
         )}
 
         <div className="flex flex-col md:flex-row gap-3 mb-6">
-          <h2 className="text-2xl font-bold capitalize">
+            <h2 className="text-2xl font-bold capitalize">
             {assetList.find((asset) => asset.symbol === activeAsset)?.name ||
-              "Unknown Asset"}
-          </h2>
-          
+              "Unknown Asset"} (Devnet Mode)
+            </h2>
+
           <div className="ml-auto flex gap-3">
-          <Button
-            variant="outline"
-            size="sm"
-            className="gap-2"
-            onClick={refresh}
-          >
-            <RefreshCcw/>
-          </Button>
-            <SendDialog />
-            <ReceiveDialog />
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2"
+              onClick={refresh}
+            >
+              <RefreshCcw />
+            </Button>
+            <SendDialog
+              privateKey={
+                wallets.find(
+                  (wallet) =>
+                    wallet.name.toLowerCase() ===
+                    currentAssetData?.name.toLowerCase()
+                )?.privateKey || ""
+              }
+              name={currentAssetData?.name || ""}
+              symbol={currentAssetData?.symbol || ""}
+            />
+            <ReceiveDialog
+              name={currentAssetData?.name || ""}
+              symbol={currentAssetData?.symbol || ""}
+              publicKey={
+                wallets.find(
+                  (wallet) =>
+                    wallet.name.toLowerCase() ===
+                    currentAssetData?.name.toLowerCase()
+                )?.publicKey || ""
+              }
+            />
           </div>
         </div>
 
         {currentAssetData && (
           <SectionCard
-            holdings={0.123}
+            holdings={currentAssetData.balance}
             symbol={activeAsset}
             price={currentAssetData.current_price || 0}
             changeInPrice={currentAssetData.price_change_percentage_24h ?? 0}
@@ -209,7 +234,6 @@ export default function Dashboard() {
               }
             />
           </TabsContent>
-
           <TabsContent value="transactions"></TabsContent>
         </Tabs>
       </main>
