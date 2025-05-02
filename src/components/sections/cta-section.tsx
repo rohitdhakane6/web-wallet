@@ -1,5 +1,5 @@
 import { useRef } from "react";
-import { motion } from "@/lib/motion-wrapper";
+import { motion } from "framer-motion";
 import { useInView } from "@/hooks/use-in-view";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Wallet, Shield, RefreshCw } from "lucide-react";

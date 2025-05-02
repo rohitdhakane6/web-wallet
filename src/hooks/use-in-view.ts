@@ -7,11 +7,14 @@ type InViewOptions = {
 };
 
 export function useInView(
-  ref: RefObject<Element>,
+  ref: RefObject<Element | null>,
   options: InViewOptions = {}
 ): boolean {
   const { threshold = 0, rootMargin = '0px', once = false } = options;
   const [isInView, setIsInView] = useState(false);
+  if (!ref) {
+    throw new Error("Ref object is required");
+  }
 
   useEffect(() => {
     if (!ref.current) return;

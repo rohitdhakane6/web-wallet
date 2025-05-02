@@ -34,7 +34,7 @@ export default function CryptoTicker() {
           const change = parseFloat(coin.change.replace('%', '').replace('+', '').replace('-', ''));
           const randomChange = (Math.random() * 1 - 0.5).toFixed(1);
           const newChange = (change + parseFloat(randomChange)).toFixed(1);
-          const isPositive = newChange >= 0;
+          const isPositive = parseFloat(newChange) >= 0;
           
           const price = parseFloat(coin.price.replace('$', '').replace(',', ''));
           const percentChange = parseFloat(randomChange) / 100;

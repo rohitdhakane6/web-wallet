@@ -1,6 +1,6 @@
 import { cn } from '@/lib/utils';
 import { useRef } from 'react';
-import { motion } from '@/lib/motion-wrapper';
+import { motion } from 'framer-motion';
 import { useInView } from '@/hooks/use-in-view';
 import { 
   Check, 

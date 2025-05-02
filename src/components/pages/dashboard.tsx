@@ -14,6 +14,7 @@ import Chart from "@/components/dashboard/Chart";
 import { useCryptoData } from "@/hooks/crypto-data";
 import { useWallet } from "@/context/WalletContext";
 import { Skeleton } from "@/components/ui/skeleton";
+import { toast } from "sonner";
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("chart");
@@ -41,18 +42,9 @@ export default function Dashboard() {
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
-  // if (error) {
-  //   return (
-  //     <div className="flex items-center justify-center h-screen bg-slate-50 dark:bg-slate-950">
-  //       <div className="text-center">
-  //         <p className="text-2xl font-bold text-red-600 mb-4">Error</p>
-  //         <p className="text-md text-slate-600 dark:text-slate-400">
-  //           Failed to load crypto data. Please try again later.
-  //         </p>
-  //       </div>
-  //     </div>
-  //   );
-  // }
+  if (error) {
+    toast.error("Failed to fetch asset data");
+  }
   return (
     <div className="flex h-screen bg-slate-50 dark:bg-slate-950 overflow-hidden">
       {/* Sidebar */}
