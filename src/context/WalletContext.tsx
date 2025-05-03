@@ -23,6 +23,7 @@ interface WalletContextType {
   verificationAnswers: Record<number, string>;
   password: string;
   wallets: {
+    derivationPath: string;
     name: string;
     address: string;
     privateKey: string;
@@ -45,6 +46,7 @@ interface WalletContextType {
   setWallets: (
     wallets: {
       name: string;
+      derivationPath: string;
       address: string;
       privateKey: string;
       publicKey: string;
@@ -79,6 +81,7 @@ export const WalletProvider: React.FC<{ children: ReactNode }> = ({
   const [password, setPassword] = useState("");
   const [wallets, setWallets] = useState<
     {
+      derivationPath: string;
       name: string;
       address: string;
       privateKey: string;
@@ -151,20 +154,22 @@ export const WalletProvider: React.FC<{ children: ReactNode }> = ({
 
       const walletList: {
         name: string;
+        derivationPath: string;
         address: string;
         privateKey: string;
         publicKey: string;
       }[] = [];
 
       assetList.forEach((asset) => {
-        const { name, derivePath } = asset;
+        const { name, derivationPath } = asset;
         try {
           const wallet = deriveKeyFromMnemonic(
             recoveryPhrase.join(" "),
-            derivePath
+            derivationPath
           );
           walletList.push({
             name,
+            derivationPath,
             address: wallet.address,
             privateKey: wallet.privateKey,
             publicKey: wallet.publicKey,

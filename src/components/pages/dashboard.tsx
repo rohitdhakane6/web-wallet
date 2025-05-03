@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Wallet, Settings, RefreshCcw } from "lucide-react";
+import { Wallet, RefreshCcw } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -15,6 +15,7 @@ import { useCryptoData } from "@/hooks/crypto-data";
 import { useWallet } from "@/context/WalletContext";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
+import { SettingsDialog } from "@/components/dashboard/SettingsDialog";
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("chart");
@@ -26,7 +27,6 @@ export default function Dashboard() {
   const { data: assetData, error, loading, refresh } = useCryptoData();
   const { wallets } = useWallet();
   const currentAssetData = assetData.find((a) => a.symbol === activeAsset);
-  console.log(currentAssetData);
 
   useEffect(() => {
     const handleResize = () => {
@@ -109,9 +109,6 @@ export default function Dashboard() {
 
         <div className="mt-auto hidden md:block">
           <div className="flex items-center justify-between mb-4">
-            <Button variant="outline" className="gap-2">
-              <Settings className="w-4 h-4" /> Settings
-            </Button>
             <ModeToggle />
           </div>
           <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
@@ -149,20 +146,19 @@ export default function Dashboard() {
         )}
 
         <div className="flex flex-col md:flex-row gap-3 mb-6">
-            <h2 className="text-2xl font-bold capitalize">
+          <h2 className="text-2xl font-bold capitalize">
             {assetList.find((asset) => asset.symbol === activeAsset)?.name ||
-              "Unknown Asset"} (Devnet Mode)
-            </h2>
+              "Unknown Asset"}{" "}
+            (Devnet Mode)
+          </h2>
+          <Button size="icon" onClick={refresh}>
+            <RefreshCcw />
+          </Button>
+          <SettingsDialog
+            activeAsset={currentAssetData?.name?.toLowerCase() || ""}
+          />
 
           <div className="ml-auto flex gap-3">
-            <Button
-              variant="outline"
-              size="sm"
-              className="gap-2"
-              onClick={refresh}
-            >
-              <RefreshCcw />
-            </Button>
             <SendDialog
               privateKey={
                 wallets.find(
